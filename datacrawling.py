@@ -6,7 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from time import *
 import os
 import urllib.request
-import numpy as np
+from format.template import getHTMLfile
 
 # set up
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
@@ -39,7 +39,6 @@ status = table.find_elements(By.CLASS_NAME, "victoryDefeatText")
 kdas_list = []
 for kda in kdas:
     kdas_list.append(kda.text)
-print(kdas_list)
 
 # # get status list
 status_list = []
@@ -47,7 +46,6 @@ for stat in status:
     status_list.append(stat.text)
 while '' in status_list:
     status_list.remove('')
-print(status_list)
         
 # # get items list
 itemRows = table.find_elements(By.CLASS_NAME, "itemsColumnLight")
@@ -59,7 +57,6 @@ for itemRow in itemRows:
         item_name = encryptItemName(item.get_attribute('alt'))
         rowOfItems.append(item_name)
     rowsOfItems.append(rowOfItems)
-print(rowsOfItems)
 
 # # get champs list
 champCells = table.find_elements(By.CLASS_NAME, "championCellLight")
@@ -67,17 +64,17 @@ champs = []
 for cell in champCells:
     cell = cell.find_element(By.TAG_NAME, "img").get_attribute("title").lower()
     champs.append(encryptChampName(cell))
-print(champs)
 
 ### get data
 data = []
-if (len(status)==len(kdas) and len(items)==len(champs) and len(status)==len(items)):
-    for i in range(len(status)):
+isEqualSize = len(status_list)==len(kdas_list) and len(rowsOfItems)==len(champs) and len(status_list)==len(rowsOfItems)
+if isEqualSize:
+    for i in range(len(kdas_list)):
         data.append({
             "champion": champs[i],
-            "kda": kdas[i],
-            "status": status[i],
-            "items": items[i]
+            "kda": kdas_list[i],
+            "status": status_list[i],
+            "items": rowsOfItems[i]
         })
 
 # download champ's image
@@ -94,7 +91,7 @@ def downloadChampImage(driver, name):
 flatten_champs_list = list(dict.fromkeys(champs))
 
 for champ in flatten_champs_list:
-    isChampImageExist = os.path.exists(f"C:\\Users\\Administrator\\Documents\\GitHub\\lol-project\\images\\{champ}.png")
+    isChampImageExist = os.path.exists(f"images/{champ}.png")
     if (not isChampImageExist):
         downloadChampImage(driver, champ)
         opened_tabs += 1
@@ -115,11 +112,34 @@ flatten_items_list = [item for sublist in rowsOfItems for item in sublist]
 flatten_items_list = list(dict.fromkeys(flatten_items_list))
 
 for item in flatten_items_list:
-    isItemImageExist = os.path.exists(f"C:\\Users\\Administrator\\Documents\\GitHub\\lol-project\\items\\{item}.png")
+    isItemImageExist = os.path.exists(f"items/{item}.png")
     if not isItemImageExist:
         downloadItemImage(driver, item)
         opened_tabs += 1
     
+# download html screenshot
+def downloadHTMLfile(driver,path, idx):
+    driver.implicitly_wait(20)
+    driver.execute_script('window.open("","_blank");')
+    driver.switch_to.window(driver.window_handles[len(driver.window_handles)-1])
+    driver.get(path)
+    driver.save_screenshot(f"screenshots/screenshot{idx}.png")
+    
+for idx, match in enumerate(data):
+    isFileExist = os.path.exists(f"matchtemplates/template{idx}.html")
+    isScreenShotExist = os.path.exists(f"screenshots/screenshot{idx}.png")
+    path = f"file:///Users/ducminh/Desktop/private-code/lol-project/matchtemplates/template{idx}.html"
+    if not isFileExist:
+        with open(f'matchtemplates/template{idx}.html', 'w') as file:
+            html = getHTMLfile(match)
+            file.write(html)
+            file.close()
+    if not isScreenShotExist:
+        downloadHTMLfile(driver, path, idx)
+        opened_tabs += 1
+    
+    
+# close tabs
 if opened_tabs > 0:
     closeTab(driver, opened_tabs)
     opened_tabs = 0
