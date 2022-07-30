@@ -138,28 +138,10 @@ for idx, match in enumerate(data):
         downloadHTMLfile(driver, path, idx)
         opened_tabs += 1
     
-    
 # close tabs
 if opened_tabs > 0:
     closeTab(driver, opened_tabs)
     opened_tabs = 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 while True:
     pass
