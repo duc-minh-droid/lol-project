@@ -17,6 +17,7 @@ def closeTab(driver, opened_tabs):
         driver.switch_to.window(driver.window_handles[1])
         driver.close()
 opened_tabs = 0
+PATH = "file:///Users/ducminh/Desktop/private-code/lol-project"
 
 # encrypt file names and urls
 def encryptChampName(name):
@@ -128,9 +129,9 @@ def downloadHTMLfile(driver,path, idx):
 for idx, match in enumerate(data):
     isFileExist = os.path.exists(f"matchtemplates/template{idx}.html")
     isScreenShotExist = os.path.exists(f"screenshots/screenshot{idx}.png")
-    path = f"file:///Users/ducminh/Desktop/private-code/lol-project/matchtemplates/template{idx}.html"
+    path = f"/matchtemplates/template{idx}.html"
     if not isFileExist:
-        with open(f'matchtemplates/template{idx}.html', 'w') as file:
+        with open(f'{PATH}/matchtemplates/template{idx}.html', 'w') as file:
             html = getHTMLfile(match)
             file.write(html)
             file.close()
